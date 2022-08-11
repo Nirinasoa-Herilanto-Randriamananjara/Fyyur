@@ -16,10 +16,11 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-    genres = db.Column(ARRAY(String))
+    genres = db.Column(ARRAY(String), server_default="{}")
     website_link = db.Column(db.String())
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String())
+    
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -30,12 +31,15 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(ARRAY(String))
+    genres = db.Column(ARRAY(String), server_default="{}")
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String())
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String())
+    
+    def __repr__(self):
+        return f'<artist: {self.name}>'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 

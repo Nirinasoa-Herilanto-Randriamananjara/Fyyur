@@ -51,9 +51,7 @@ class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     artist_id = db.Column(db.Integer, db.ForeignKey("artists.id"), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey("venues.id"), nullable=False)
-    start_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    start_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
 
     def __repr__(self):
         return f'Show on {self.start_time} with artist_id: {self.artist_id} at venue_id: {self.venue_id}'
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.

@@ -21,6 +21,7 @@ class ShowForm(FlaskForm):
         validators=[DataRequired()],
         default= datetime.today()
     )
+    submit = SubmitField("Create Show")
 
 class VenueForm(FlaskForm):
     name = StringField(

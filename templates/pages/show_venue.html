@@ -95,4 +95,25 @@ block content %}
   ><button class="btn btn-primary btn-lg">Edit</button></a
 >
 
+<button class="btn btn-danger btn-lg btn__delete--venue" data-id="{{venue.id}}">
+  Delete
+</button>
+
+<script>
+  const deleteBtn = document.querySelector('.btn__delete--venue');
+
+  deleteBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    const venueId = e.target.dataset.id;
+
+    if (!venueId) return;
+
+    fetch(`/venues/${venueId}/delete`, {
+      method: 'DELETE',
+    });
+
+    window.location.replace('/');
+  });
+</script>
+
 {% endblock %}

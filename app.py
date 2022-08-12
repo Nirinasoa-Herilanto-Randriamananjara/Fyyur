@@ -45,36 +45,11 @@ app.jinja_env.filters['datetime'] = format_datetime
 def index():
   return render_template('pages/home.html')
 
-
 #  Venues
 #  ----------------------------------------------------------------
 
 @app.route('/venues')
 def venues():
-    # TODO: replace with real venues data.
-    #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-    # data=[{
-    #   "city": "San Francisco",
-    #   "state": "CA",
-    #   "venues": [{
-    #     "id": 1,
-    #     "name": "The Musical Hop",
-    #     "num_upcoming_shows": 0,
-    #   }, {
-    #     "id": 3,
-    #     "name": "Park Square Live Music & Coffee",
-    #     "num_upcoming_shows": 1,
-    #   }]
-    # }, {
-    #   "city": "New York",
-    #   "state": "NY",
-    #   "venues": [{
-    #     "id": 2,
-    #     "name": "The Dueling Pianos Bar",
-    #     "num_upcoming_shows": 0,
-    #   }]
-    # }]
-    
     all_venues_info = Venue.query.order_by(Venue.city).with_entities(Venue.city, Venue.state)\
                   .group_by(Venue.city, Venue.state).all()
     
@@ -85,17 +60,6 @@ def venues():
         
     for item in data:
         item['venues'] = Venue.query.with_entities(Venue.id, Venue.name).filter(Venue.city==item.get('city')).all()
-        # item['venues'] = []
-    
-    # for venue in all_venues:
-    #     data.append({"city": venue.city,
-    #                   "state": venue.state,
-    #                   "venues": [{
-    #                     "id": venue.id,
-    #                     "name": venue.name
-    #                   }]
-    #                 })
-
     
     return render_template('pages/venues.html', areas=data);
 
@@ -121,10 +85,8 @@ def show_venue(venue_id):
     data.upcoming_shows = []
     
     for show in all_shows:
-        # print(show.artist)
         # loop throught the show, check if the single venue has a show
         if show.venue_id == data.id:
-            # print(show.start_time > datetime.now()) 
             if show.start_time > datetime.now():
                 data.upcoming_shows.append({"artist_id": show.artist_id,
                                             "artist_name": show.artist.name,
@@ -171,15 +133,25 @@ def create_venue_submission():
         db.session.close()
     return redirect(url_for('venues'))
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<venue_id>/delete', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
-
+    try:
+        venue = Venue.query.get(venue_id)
+        
+        for item in venue.shows:
+            db.session.delete(item)
+        
+        db.session.delete(venue)
+        db.session.commit()
+        
+        flash('Venue ' + venue.name + ' deleted successfully.')
+    except:
+        db.session.rollback()
+        flash('Delete venue failed. Please try again!')
+    finally:
+        db.session.close()
+        
+        
 #  Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
@@ -349,7 +321,6 @@ def shows():
     data = []
     
     for show in all_shows:
-        print(show.artist)
         data.append({
                     "venue_id": show.venue_id,
                     "artist_id": show.artist_id,

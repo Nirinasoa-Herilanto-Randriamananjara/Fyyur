@@ -226,20 +226,35 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-    try:
-        artist = Artist.query.get(artist_id)
-        form = ArtistForm(request.form, obj=artist)
-        if form.validate():
-            form.populate_obj(artist)
+    form = ArtistForm()
+    if form.validate_on_submit():
+        try:
+            artist = Artist.query.get(artist_id)
+            
+            artist.name = form.name.data
+            artist.city = form.city.data
+            artist.state = form.state.data
+            artist.phone = form.phone.data
+            artist.genres = form.genres.data
+            artist.image_link = form.image_link.data
+            artist.facebook_link = form.facebook_link.data
+            artist.website_link = form.website_link.data
+            artist.seeking_venue = form.seeking_venue.data
+            artist.seeking_description = form.seeking_description.data
             
             db.session.commit()
+            
             flash('Artist ' + request.form['name'] + ' was successfully updated!')
-    except:
-        db.session.rollback()
-        flash('An error occurred. Update Artist ' + request.form['name'] + ' was failed.')
-    finally:
-        db.session.close()
-    return redirect(url_for('show_artist', artist_id=artist_id))
+            return redirect(url_for('show_artist', artist_id=artist_id))
+        except:
+            db.session.rollback()
+            flash('An error occurred. Update Artist ' + request.form['name'] + ' was failed.')
+            return render_template('forms/edit_artist.html', form=form)
+        finally:
+                db.session.close()
+    else:
+        flash(form.errors.items())
+        return render_template('forms/edit_artist.html', form=form)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
@@ -290,24 +305,37 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-    try:
-        artist = Artist()
-        form = ArtistForm(request.form, obj=artist)
-        
-        if form.validate():
-            form.populate_obj(artist)
+    form = ArtistForm()
+    if form.validate_on_submit():
+        try:
+            artist = Artist(name=form.name.data,
+                            city=form.city.data,
+                            state=form.state.data,
+                            phone=form.phone.data,
+                            genres=form.genres.data,
+                            image_link=form.image_link.data,
+                            facebook_link=form.facebook_link.data,
+                            website_link=form.website_link.data,
+                            seeking_venue=form.seeking_venue.data,
+                            seeking_description=form.seeking_description.data)
             
             db.session.add(artist)
             db.session.commit()
+            
             flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    except:
-        db.session.rollback()
-        flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
-    finally:
-        db.session.close()
-    return redirect(url_for('artists'))
 
-
+            return redirect(url_for('artists'))
+        except:
+            db.session.rollback()
+            flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+        
+            return render_template('forms/new_artist.html', form=form)
+        finally:
+            db.session.close()
+    else:
+        flash(form.errors.items())
+        return render_template('forms/new_artist.html', form=form)
+        
 #  Shows
 #  ----------------------------------------------------------------
 

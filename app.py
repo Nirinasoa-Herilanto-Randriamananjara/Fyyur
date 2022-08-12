@@ -115,23 +115,37 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-    try:
-        venue = Venue()
-        form = VenueForm(request.form, obj=venue)
-        
-        if form.validate():
-            form.populate_obj(venue)
+    form = VenueForm()
+    if form.validate_on_submit():
+        try:
+            venue = Venue(name=form.name.data,
+                          city=form.city.data,
+                          state=form.state.data,
+                          address=form.address.data,
+                          phone=form.phone.data,
+                          image_link=form.image_link.data,
+                          facebook_link=form.facebook_link.data,
+                          genres=form.genres.data,
+                          website_link=form.website_link.data,
+                          seeking_talent=form.seeking_talent.data,
+                          seeking_description=form.seeking_description.data
+                          )
             
             db.session.add(venue)
             db.session.commit()
             
             flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    except:
-        db.session.rollback()
-        flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
-    finally:
-        db.session.close()
-    return redirect(url_for('venues'))
+            
+            return redirect(url_for('venues'))
+        except:
+            db.session.rollback()
+            flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+            return render_template('forms/new_venue.html', form=form)
+        finally:
+            db.session.close()
+    else:
+        flash(form.errors.items())
+        return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/<venue_id>/delete', methods=['DELETE'])
 def delete_venue(venue_id):
@@ -280,20 +294,37 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-    try:
-        venue = Venue.query.get(venue_id)
-        form = VenueForm(request.form, obj=venue)
-        if form.validate():
-            form.populate_obj(venue)
+    form = VenueForm()
+    if form.validate_on_submit():
+        try:
+            venue = Venue.query.get(venue_id)
             
+            venue.name = form.name.data
+            venue.city = form.city.data
+            venue.state = form.state.data
+            venue.address = form.address.data
+            venue.phone = form.phone.data
+            venue.image_link = form.image_link.data
+            venue.facebook_link = form.facebook_link.data
+            venue.genres = form.genres.data
+            venue.website_link = form.website_link.data
+            venue.seeking_talent = form.seeking_talent.data
+            venue.seeking_description = form.seeking_description.data
+                
             db.session.commit()
+            
             flash('Venue ' + request.form['name'] + ' was successfully updated!')
-    except:
-        db.session.rollback()
-        flash('An error occurred. Update Venue ' + request.form['name'] + ' was failed.')
-    finally:
-        db.session.rollback()
-    return redirect(url_for('show_venue', venue_id=venue_id))
+            
+            return redirect(url_for('show_venue', venue_id=venue_id))
+        except:
+            db.session.rollback()
+            flash('An error occurred. Update Venue ' + request.form['name'] + ' was failed.')
+            return render_template('forms/edit_venue.html', form=form)
+        finally:
+            db.session.rollback()
+    else:
+        flash(form.errors.items())
+        return render_template('forms/edit_venue.html', form=form)
 
 #  Create Artist
 #  ----------------------------------------------------------------

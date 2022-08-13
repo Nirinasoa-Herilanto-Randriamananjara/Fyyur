@@ -160,7 +160,7 @@ def create_venue_submission():
         finally:
             db.session.close()
     else:
-        flash(form.errors.items())
+        flash(form.errors)
         return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/<venue_id>/delete', methods=['DELETE'])
@@ -282,8 +282,8 @@ def edit_artist_submission(artist_id):
         finally:
                 db.session.close()
     else:
-        flash(form.errors.items())
-        return render_template('forms/edit_artist.html', form=form)
+        flash(form.errors)
+        return redirect(url_for('edit_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
@@ -338,8 +338,8 @@ def edit_venue_submission(venue_id):
         finally:
             db.session.rollback()
     else:
-        flash(form.errors.items())
-        return render_template('forms/edit_venue.html', form=form)
+        flash(form.errors)
+        return redirect(url_for('edit_venue', venue_id=venue_id))
 
 #  Create Artist
 #  ----------------------------------------------------------------
@@ -379,7 +379,7 @@ def create_artist_submission():
         finally:
             db.session.close()
     else:
-        flash(form.errors.items())
+        flash(form.errors)
         return render_template('forms/new_artist.html', form=form)
         
 #  Shows
@@ -435,7 +435,7 @@ def create_show_submission():
         finally:
             db.session.close()
     else:
-        flash(form.errors.items())
+        flash(form.errors)
         return render_template('forms/new_show.html', form=form)
 
 @app.errorhandler(404)

@@ -6,7 +6,7 @@ import json
 import dateutil.parser
 import babel
 import logging
-from flask import render_template, request, Response, flash, redirect, url_for
+from flask import render_template, request, Response, flash, redirect, url_for, jsonify
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
@@ -50,30 +50,6 @@ def index():
 
 @app.route('/venues')
 def venues():
-    # all_venues_info = Venue.query.order_by(Venue.city).with_entities(Venue.city, Venue.state)\
-    #               .group_by(Venue.city, Venue.state).all()
-    
-    # data = []
-    # for venue in all_venues_info:
-    #     data.append({ "city": venue.city,
-    #                  "state": venue.state
-    #                 })
-        
-    # for item in data:
-    #     item['venues'] = Venue.query.filter(Venue.city==item.get('city')).all()
-    
-  # TODO: replace with real venues data.
-  #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-    # {
-    # "city": "New York",
-    # "state": "NY",
-    # "venues": [{
-    #   "id": 2,
-    #   "name": "The Dueling Pianos Bar",
-    #   "num_upcoming_shows": 0,
-    #     }]
-    # }
-    
     all_venues_info = Venue.query.order_by(Venue.city).with_entities(Venue.city, Venue.state)\
                   .group_by(Venue.city, Venue.state).all()
                   
@@ -199,6 +175,7 @@ def delete_venue(venue_id):
         db.session.commit()
         
         flash('Venue ' + venue.name + ' deleted successfully.')
+        return jsonify({'success': True})
     except:
         db.session.rollback()
         flash('Delete venue failed. Please try again!')
@@ -214,13 +191,13 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  search_word = request.form.get('search_term', '')
-  
-  response={
-    "count": Artist.query.filter(Artist.name.ilike(f'%{search_word}%')).count(),
-    "data": Artist.query.filter(Artist.name.ilike(f'%{search_word}%')).all()
-  }
-  return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+    search_word = request.form.get('search_term', '')
+    
+    response={
+        "count": Artist.query.filter(Artist.name.ilike(f'%{search_word}%')).count(),
+        "data": Artist.query.filter(Artist.name.ilike(f'%{search_word}%')).all()
+    }
+    return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):

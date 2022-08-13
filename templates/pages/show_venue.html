@@ -110,9 +110,13 @@ block content %}
 
     fetch(`/venues/${venueId}/delete`, {
       method: 'DELETE',
-    });
+    })
+      .then((res) => {
+        if (!res.ok) return;
 
-    window.location.replace('/');
+        window.location.replace('/');
+      })
+      .catch((error) => error);
   });
 </script>
 

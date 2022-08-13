@@ -8,7 +8,8 @@ from wtforms import (
     DateTimeField,
     BooleanField,
     SubmitField,
-    TelField
+    TelField,
+    URLField
     )
 from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
 
@@ -18,6 +19,14 @@ def validate_phonenumber(form, phonenumber):
     if not match:
         raise ValidationError(
             'Invalid phone number'
+        )
+
+def validate_facebook_link(form, link):
+    fb_link_rule = 'https://www.facebook.com/.*'
+    match = re.search(fb_link_rule, link.data)
+    if not match:
+        raise ValidationError(
+            'Invalid facebook link'
         )
 
 property_choices_venue = [
@@ -160,8 +169,8 @@ class VenueForm(FlaskForm):
         'genres', validators=[DataRequired(), validate_choice_venue],
         choices=property_choices_venue
     )
-    facebook_link = StringField(
-        'facebook_link', validators=[URL()]
+    facebook_link = URLField(
+        'facebook_link', validators=[URL(), validate_facebook_link]
     )
     website_link = StringField(
         'website_link'
@@ -268,9 +277,8 @@ class ArtistForm(FlaskForm):
             ('Other', 'Other'),
         ]
      )
-    facebook_link = StringField(
-        # TODO implement enum restriction
-        'facebook_link', validators=[URL()]
+    facebook_link = URLField(
+        'facebook_link', validators=[URL(), validate_facebook_link]
      )
     website_link = StringField(
         'website_link'
@@ -281,4 +289,3 @@ class ArtistForm(FlaskForm):
      )
     submit = SubmitField("Create Artist")
     
-

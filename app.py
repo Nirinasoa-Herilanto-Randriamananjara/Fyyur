@@ -86,8 +86,8 @@ def search_venues():
     search_word = request.form.get('search_term', '')
     
     response={
-        "count": Venue.query.filter(Venue.name.ilike(f'%{search_word}%')).count(),
-        "data": Venue.query.filter(Venue.name.ilike(f'%{search_word}%')).all()
+        "count": Venue.query.filter(Venue.name.ilike('%' + search_word + '%')).count(),
+        "data": Venue.query.filter(Venue.name.ilike('%' + search_word +'%')).all()
     }
     
     return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
@@ -194,8 +194,8 @@ def search_artists():
     search_word = request.form.get('search_term', '')
     
     response={
-        "count": Artist.query.filter(Artist.name.ilike(f'%{search_word}%')).count(),
-        "data": Artist.query.filter(Artist.name.ilike(f'%{search_word}%')).all()
+        "count": Artist.query.filter(Artist.name.ilike('%' + search_word + '%')).count(),
+        "data": Artist.query.filter(Artist.name.ilike('%' + search_word + '%')).all()
     }
     return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 

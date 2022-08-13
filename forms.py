@@ -12,14 +12,20 @@ from wtforms import (
     URLField
     )
 from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
+import phonenumbers
 
-def validate_phonenumber(form, phonenumber):
-    phonenumber_rule = '[0-9]{3}-[0-9]{3}-[0-9]{3}'
-    match = re.search(phonenumber_rule, phonenumber.data)
-    if not match:
-        raise ValidationError(
-            'Invalid phone number'
-        )
+def check_valide_phonenumber(form, num):
+    try:
+        phone = phonenumbers.parse(num.data, "US")
+    
+        if not phonenumbers.is_valid_number(phone):
+            raise ValidationError(
+                'Invalid phone number'
+            )
+            
+    except phonenumbers.NumberParseException as e:
+        raise ValidationError('Invalid phone number')
+        
 
 def validate_facebook_link(form, link):
     fb_link_rule = 'https://www.facebook.com/.*'
@@ -160,7 +166,7 @@ class VenueForm(FlaskForm):
         'address', validators=[DataRequired()]
     )
     phone = TelField(
-        'phone', validators=[DataRequired(), validate_phonenumber]
+        'phone', validators=[DataRequired(), check_valide_phonenumber]
     )
     image_link = StringField(
         'image_link'
@@ -248,7 +254,7 @@ class ArtistForm(FlaskForm):
         ]
     )
     phone = TelField(
-        'phone', validators=[DataRequired(), validate_phonenumber]
+        'phone', validators=[DataRequired(), check_valide_phonenumber]
     )
     image_link = StringField(
         'image_link'

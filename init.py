@@ -13,6 +13,7 @@ moment = Moment(app)
 
 app.config.from_object('config')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["WTF_CSRF_ENABLED"] = False
 
 db = SQLAlchemy(app)
 

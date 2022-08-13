@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import (
@@ -6,8 +7,67 @@ from wtforms import (
     SelectMultipleField,
     DateTimeField,
     BooleanField,
-    SubmitField)
-from wtforms.validators import DataRequired, AnyOf, URL
+    SubmitField,
+    TelField
+    )
+from wtforms.validators import DataRequired, AnyOf, URL, ValidationError
+
+def validate_phonenumber(form, phonenumber):
+    phonenumber_rule = '[0-9]{3}-[0-9]{3}-[0-9]{3}'
+    match = re.search(phonenumber_rule, phonenumber.data)
+    if not match:
+        raise ValidationError(
+            'Invalid phone number'
+        )
+
+property_choices_venue = [
+            ('Alternative', 'Alternative'),
+            ('Blues', 'Blues'),
+            ('Classical', 'Classical'),
+            ('Country', 'Country'),
+            ('Electronic', 'Electronic'),
+            ('Folk', 'Folk'),
+            ('Funk', 'Funk'),
+            ('Hip-Hop', 'Hip-Hop'),
+            ('Heavy Metal', 'Heavy Metal'),
+            ('Instrumental', 'Instrumental'),
+            ('Jazz', 'Jazz'),
+            ('Musical Theatre', 'Musical Theatre'),
+            ('Pop', 'Pop'),
+            ('Punk', 'Punk'),
+            ('R&B', 'R&B'),
+            ('Reggae', 'Reggae'),
+            ('Rock n Roll', 'Rock n Roll'),
+            ('Soul', 'Soul'),
+            ('Other', 'Other'),
+        ]
+
+def validate_choice_venue(form, property):
+    properties = [
+            'Alternative',
+            'Blues',
+            'Classical',
+            'Country',
+            'Electronic',
+            'Folk',
+            'Funk',
+            'Hip-Hop',
+            'Heavy Metal',
+            'Instrumental',
+            'Jazz',
+            'Musical Theatre',
+            'Pop',
+            'Punk',
+            'R&B',
+            'Reggae',
+            'Rock n Roll',
+            'Soul',
+            'Other'
+    ]
+    
+    for property in property.data:
+        if property not in properties:
+            raise ValidationError('This property is not allowed.')
 
 class ShowForm(FlaskForm):
     artist_id = StringField(
@@ -22,6 +82,7 @@ class ShowForm(FlaskForm):
         default= datetime.today()
     )
     submit = SubmitField("Create Show")
+    
 
 class VenueForm(FlaskForm):
     name = StringField(
@@ -89,36 +150,15 @@ class VenueForm(FlaskForm):
     address = StringField(
         'address', validators=[DataRequired()]
     )
-    phone = StringField(
-        'phone'
+    phone = TelField(
+        'phone', validators=[DataRequired(), validate_phonenumber]
     )
     image_link = StringField(
         'image_link'
     )
     genres = SelectMultipleField(
-        # TODO implement enum restriction
-        'genres', validators=[DataRequired()],
-        choices=[
-            ('Alternative', 'Alternative'),
-            ('Blues', 'Blues'),
-            ('Classical', 'Classical'),
-            ('Country', 'Country'),
-            ('Electronic', 'Electronic'),
-            ('Folk', 'Folk'),
-            ('Funk', 'Funk'),
-            ('Hip-Hop', 'Hip-Hop'),
-            ('Heavy Metal', 'Heavy Metal'),
-            ('Instrumental', 'Instrumental'),
-            ('Jazz', 'Jazz'),
-            ('Musical Theatre', 'Musical Theatre'),
-            ('Pop', 'Pop'),
-            ('Punk', 'Punk'),
-            ('R&B', 'R&B'),
-            ('Reggae', 'Reggae'),
-            ('Rock n Roll', 'Rock n Roll'),
-            ('Soul', 'Soul'),
-            ('Other', 'Other'),
-        ]
+        'genres', validators=[DataRequired(), validate_choice_venue],
+        choices=property_choices_venue
     )
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
@@ -135,9 +175,6 @@ class VenueForm(FlaskForm):
     
     submit = SubmitField("Create Venue")
     
-
-
-
 class ArtistForm(FlaskForm):
     name = StringField(
         'name', validators=[DataRequired()]
@@ -201,9 +238,8 @@ class ArtistForm(FlaskForm):
             ('WY', 'WY'),
         ]
     )
-    phone = StringField(
-        # TODO implement validation logic for state
-        'phone'
+    phone = TelField(
+        'phone', validators=[DataRequired(), validate_phonenumber]
     )
     image_link = StringField(
         'image_link'

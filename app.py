@@ -50,42 +50,82 @@ def index():
 
 @app.route('/venues')
 def venues():
+    # all_venues_info = Venue.query.order_by(Venue.city).with_entities(Venue.city, Venue.state)\
+    #               .group_by(Venue.city, Venue.state).all()
+    
+    # data = []
+    # for venue in all_venues_info:
+    #     data.append({ "city": venue.city,
+    #                  "state": venue.state
+    #                 })
+        
+    # for item in data:
+    #     item['venues'] = Venue.query.filter(Venue.city==item.get('city')).all()
+    
+  # TODO: replace with real venues data.
+  #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
+    # {
+    # "city": "New York",
+    # "state": "NY",
+    # "venues": [{
+    #   "id": 2,
+    #   "name": "The Dueling Pianos Bar",
+    #   "num_upcoming_shows": 0,
+    #     }]
+    # }
+    
     all_venues_info = Venue.query.order_by(Venue.city).with_entities(Venue.city, Venue.state)\
                   .group_by(Venue.city, Venue.state).all()
+                  
+    all_venue = Venue.query.order_by(Venue.city).all()
+    all_show = Show.query.join(Venue, Show.venue_id==Venue.id).all()
     
     data = []
     
     for venue in all_venues_info:
-        data.append({ "city": venue.city, "state": venue.state})
+        data.append({"city": venue.city,
+                    "state": venue.state,
+                    "venues": []
+                    })
+            
+    for venue in all_venue:
+        num_upcoming_shows = 0
         
-    for item in data:
-        item['venues'] = Venue.query.with_entities(Venue.id, Venue.name).filter(Venue.city==item.get('city')).all()
-    
+        for show in all_show:
+            if show.venue_id == venue.id and show.start_time > datetime.now():
+                num_upcoming_shows+=1
+        
+        for item in data:
+            if item.get('city') == venue.city:
+                item.get('venues').append({
+                            "id": venue.id,
+                            "name": venue.name,
+                            "num_upcoming_shows": num_upcoming_shows
+                        })
+        
     return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  search_word = request.form.get('search_term', '')
-  
-  response={
-    "count": Venue.query.filter(Venue.name.ilike(f'%{search_word}%')).count(),
-    "data": Venue.query.filter(Venue.name.ilike(f'%{search_word}%')).all()
-  }
-  
-  return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+    search_word = request.form.get('search_term', '')
+    
+    response={
+        "count": Venue.query.filter(Venue.name.ilike(f'%{search_word}%')).count(),
+        "data": Venue.query.filter(Venue.name.ilike(f'%{search_word}%')).all()
+    }
+    
+    return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
     data = Venue.query.get(venue_id)
     
-    all_shows = Show.query.join(Venue, Show.venue_id==Venue.id)\
-                .join(Artist, Show.artist_id==Artist.id).all()
+    all_shows = Show.query.join(Artist, Show.artist_id==Artist.id).all()
     
     data.past_shows = []
     data.upcoming_shows = []
     
     for show in all_shows:
-        # loop throught the show, check if the single venue has a show
         if show.venue_id == data.id:
             if show.start_time > datetime.now():
                 data.upcoming_shows.append({"artist_id": show.artist_id,
@@ -165,7 +205,6 @@ def delete_venue(venue_id):
     finally:
         db.session.close()
         
-        
 #  Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
@@ -187,8 +226,7 @@ def search_artists():
 def show_artist(artist_id):
     data = Artist.query.get(artist_id)
     
-    all_shows = Show.query.join(Artist, Show.artist_id==Artist.id)\
-                .join(Venue, Show.venue_id==Venue.id).all() 
+    all_shows = Show.query.join(Venue, Show.venue_id==Venue.id).all() 
     
     data.past_shows = []
     data.upcoming_shows = []
